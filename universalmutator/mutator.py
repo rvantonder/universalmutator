@@ -2,12 +2,11 @@ from __future__ import print_function
 
 import re
 import pkg_resources
+import random
 
 
-def mutants(source, ruleFiles=["universal.rules"], mutateTestCode=False, mutateBoth=False,
-            ignorePatterns=None, ignoreStringOnly=False):
+def compileRules(ruleFiles):
     rulesText = []
-    print("MUTATING WITH RULES:", ", ".join(ruleFiles))
 
     for ruleFile in ruleFiles:
         if ".rules" not in ruleFile:
@@ -67,6 +66,16 @@ def mutants(source, ruleFiles=["universal.rules"], mutateTestCode=False, mutateB
         else:
             rules.append(((lhs, rhs), (r, ruleSource + ":" + str(ruleLineNo))))
 
+    return (rules, ignoreRules, skipRules)
+
+
+def mutants(source, ruleFiles=["universal.rules"], mutateTestCode=False, mutateBoth=False,
+            ignorePatterns=None, ignoreStringOnly=False, fuzzing=False):
+
+    print("MUTATING WITH RULES:", ", ".join(ruleFiles))
+
+    (rules, ignoreRules, skipRules) = compileRules(ruleFiles)
+
     for p in ignorePatterns:
         try:
             lhs = re.compile(p)
@@ -82,8 +91,15 @@ def mutants(source, ruleFiles=["universal.rules"], mutateTestCode=False, mutateB
     lineno = 0
     stringSkipped = 0
     inTestCode = False
+    if fuzzing:
+        # Pick a random target line, ignore others
+        if len(source) == 0:
+            return []
+        targetLine = random.randrange(1, len(source) + 1)
     for l in source:
         lineno += 1
+        if fuzzing and (lineno != targetLine):
+            continue
         if inTestCode:
             if "@END_TEST_CODE" in l:
                 inTestCode = False
