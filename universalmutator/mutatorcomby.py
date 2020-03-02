@@ -89,13 +89,14 @@ def mutants(source, ruleFiles=["universal.rules"], mutateTestCode=False, mutateB
                 environment[entry] = match.environment.get(entry).fragment
             mutant = comby.substitute(rhs, environment)
             substitutionRange = (match.location.start.offset, match.location.stop.offset)
-            mutants.append((substitutionRange, mutant, ruleUsed))
+            lineRange = (match.location.start.line, match.location.stop.line)
+            mutants.append((substitutionRange, mutant, ruleUsed, lineRange))
 
     return mutants
 
 
-# Mutant is a tuple (<range to of matching source (in file offsets) that will be replaced by mutant fragment>, <mutant fragment>, <rule used>)
-# Example: ((41, 58), 'improved_myfunction(x)', 'foo ==> bar')
+# Mutant is a tuple (<range to of matching source (in file offsets) that will be replaced by mutant fragment>, <mutant fragment>, <rule used>, <line range>)
+# Example: ((41, 58), 'improved_myfunction(x)', 'foo ==> bar', (10, 11))
 # Ranges may not be unicode friendly...
 def makeMutant(source, mutant, path):
     sourceBeforeFragment = source[:mutant[0][0]]
