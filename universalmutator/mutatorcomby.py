@@ -1,8 +1,6 @@
 from __future__ import print_function
 
-import re
 import pkg_resources
-import random
 
 from comby import Comby
 
@@ -69,7 +67,7 @@ def compileRules(ruleFiles):
 
 
 def mutants(source, ruleFiles=["universal.rules"], mutateTestCode=False, mutateBoth=False,
-            ignorePatterns=None, ignoreStringOnly=False, fuzzing=False):
+            ignorePatterns=None, ignoreStringOnly=False, fuzzing=False, language=".generic"):
 
     comby = Comby()
 
@@ -85,7 +83,7 @@ def mutants(source, ruleFiles=["universal.rules"], mutateTestCode=False, mutateB
     mutants = []
     # Instead of line-by-line x rule-by-rule iterate rule-by-rule x match-by-match.
     for ((lhs, rhs), ruleUsed) in rules:
-        for match in comby.matches(source, lhs): # FIXME(RVT): add language
+        for match in comby.matches(source, lhs, language=language):
             environment = dict()
             for entry in match.environment:
                 environment[entry] = match.environment.get(entry).fragment
